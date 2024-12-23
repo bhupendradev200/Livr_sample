@@ -1,36 +1,41 @@
 # ./docker-compose.yml
-version: "3.8"
 services:
   backend:
     build:
       context: ./backend
-      dockerfile: .dockerFile
+      dockerfile: Dockerfile # Ensure this matches the actual Dockerfile name
+    container_name: LivrApplication
     ports:
       - "3000:3000" # Map port 3000 on the host to port 3000 in the container
     env_file:
       - .env
-    secrets:
-      - apikey
-      - serviceAccountKey
+    # secrets:
+    #   - apikey
+    #   - serviceAccountKey
     restart: always
 
   redis:
     image: "redis:latest"
+    container_name: RedisCache_Livr 
     ports:
       - "6379:6379"
-    environment:
-      - REDIS_PASSWORD_FILE=/run/secrets/redis_password
-    secrets:
-      - redis_password
-      - redis_username
+    env_file:
+      - .env
+    volumes:
+      - ./redis-server/redis.conf:/usr/local/etc/redis/redis.conf
+    entrypoint: ["/bin/sh", "-c", "redis-server /usr/local/etc/redis/redis.conf --requirepass 'Test@1234'"]
+    # secrets:
+    #   - redis_username
+    #   - redis_password
     restart: always
 
-secrets:
-  apikey:
-    external: true
-  redis_password:
-    external: true
-  redis_username:
-    external: true
-  serviceAccountKey:
-    external: true
+# Uncomment the secrets section if you decide to use Docker secrets in the future
+# secrets:
+#   apikey:
+#     external: true
+#   redis_username:
+#     external: true
+#   redis_password:
+#     external: true
+#   serviceAccountKey:
+#     external: true
